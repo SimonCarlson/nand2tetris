@@ -42,5 +42,23 @@ CHIP ALU {
         ng; // 1 if (out < 0),  0 otherwise
 
     PARTS:
-   // Put you code here:
+    // Choose X or zero X
+    Mux16(a=x, b[0..15]=false, sel=zx, out=XOut);
+    Not16(in=XOut, out=notX);
+    // Invert X depending on nx
+    Mux16(a=XOut, b=notX, sel=nx, out=notXOut);
+
+    // Same for Y
+    Mux16(a=y, b[0..15]=false, sel=zy, out=YOut);
+    Not16(in=YOut, out=notY);
+    Mux16(a=YOut, b=notY, sel=ny, out=notYOut);
+
+    // Compute the possible functions
+    Add16(a=notXOut, b=notYOut, out=XAddY);
+    And16(a=notXOut, b=notYOut, out=XAndY);
+    // Pick function f(x, y)
+    Mux16(a=XAndY, b=XAddY, sel=f, out=fXY);
+
+    Not16(in=fXY, out=notfXY);
+    Mux16(a=fXY, b=notfXY, sel=no, out=out);
 }
