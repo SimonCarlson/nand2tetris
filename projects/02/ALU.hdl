@@ -59,6 +59,21 @@ CHIP ALU {
     // Pick function f(x, y)
     Mux16(a=XAndY, b=XAddY, sel=f, out=fXY);
 
+    // Negate f(x, y)
     Not16(in=fXY, out=notfXY);
-    Mux16(a=fXY, b=notfXY, sel=no, out=out);
+    // Pick which output
+    Mux16(a=fXY, b=notfXY, sel=no, out=oo);
+
+    // Set zr
+    //Or16Way(in=oo, out=zrAux);
+    Or16Way(in=oo, out=zrAux);
+    Not(in=zrAux, out=zr);
+
+    // Set ng
+    And16(a=oo, b[0..15]=true, out[15]=ng, out[0..14]=ignore);
+
+    // Return out
+    Or16(a=oo, b[0..15]=false, out=out);
+
+
 }
