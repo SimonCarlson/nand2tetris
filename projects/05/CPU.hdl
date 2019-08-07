@@ -39,5 +39,52 @@ CHIP CPU {
         pc[15];          // address of next instruction
 
     PARTS:
-    // Put your code here:
+    // Bit 15: 0 is A instruction, 1 is C instruction
+    Not(in=instruction[15], out=notIn);
+    Mux16(a=aluOut, b=instruction, sel=notIn, out=instructionOut);
+
+    // Bit 5 (d1): if 1, A is destination
+    Or(a=notIn, b=instruction[5], out=loadA);
+    ARegister(in=instructionOut, load=loadA, out=A, out[0..14]=addressM);
+
+    // Bit 12: use M instead of A
+    And(a=instruction[15], b=instruction[12], out=AorM);
+    Mux16(a=A, b=inM, sel=AorM, out=memoryOut);
+
+    // Bits 11-6: c-bits in C instruction
+    ALU(x=D, y=memoryOut, zx=instruction[11], nx=instruction[10], zy=instruction[9], 
+        ny=instruction[8], f=instruction[7], no=instruction[6], out=aluOut, out=outM, zr=zr, ng=ng);
+
+    // Bit 4: Store result in D
+    And(a=instruction[15], b=instruction[4], out=loadD);
+    DRegister(in=aluOut, load=loadD, out=D);
+
+    // Bit 3: Store result in M
+    And(a=instruction[15], b=instruction[3], out=writeM);
+
+    // Output positive
+    Not(in=ng, out=pos);
+    // Output non-zero
+    Not(in=zr, out=nzr);
+    // Bit j3: indicates JGT if C-instruction
+    And(a=instruction[15], b=instruction[0], out=jgt);
+    And(a=pos, b=nzr, out=posnzr);
+    // JGT: positive non-zero number
+    And(a=jgt, b=posnzr, out=ld1);
+
+    // Bit j2: indicates JEQ if C-instruction
+    And(a=instruction[15], b=instruction[1], out=jeq);
+    // JEQ: equals zero
+    And(a=jeq, b=zr, out=ld2);
+
+    // Bit j1: indicates JLT if C-instruction
+    And(a=instruction[15], b=instruction[2], out=jlt);
+    // JLT: lesser than zero (ng)
+    And(a=jlt, b=ng, out=ld3);
+
+    // If j1 j2 j3 are 0 -> no jump instruction, ld = 0 and PC is incremented
+    Or(a=ld1, b=ld2, out=ldt);
+    Or(a=ld3, b=ldt, out=ld);
+
+    PC(in=A, load=ld, inc=true, reset=reset, out[0..14]=pc);
 }
