@@ -111,7 +111,7 @@ def init_symbol_table():    # @TODO: Initialize table with predefined symbols
     symbols["ARG"] = 2
     symbols["THIS"] = 3
     symbols["THAT"] = 4
-    
+
     return symbols
 
 def dec_to_binary(i):
@@ -179,7 +179,7 @@ if __name__ == "__main__":
 
         # @TODO: Write to file
         print("Writing " + instruction)
-        f.write(instruction)    # @TODO: Also write newline?
+        f.write(instruction + "\n")    # @TODO: Also write newline?
         instruction = ""
 
     f.close()
