@@ -86,11 +86,19 @@ def jumpCode(jump):
     table = {"":"000", "JGT":"001", "JEQ":"010", "JGE":"011", "JLT":"100", "JNE":"101", "JLE":"110", "JMP":"111"}
     return table[jump]  # @FIXME KeyError? Also, null?
 
+def init_symbol_table():    # @TODO: Initialize table with predefined symbols
+    symbols = {}
+
+    return symbols
+
+def dec_to_binary(i):
+    i = int(i) 
+    return bin(i)[2:]   # Cut off 0b
 
 if __name__ == "__main__":
-    file = "max/Max.asm"    # @FIXME: Accept path as argument
+    file = "add/Add.asm"    # @FIXME: Accept path as argument
     parser = Parser(file)
-    symbols = {}
+    symbols = init_symbol_table()
     free_address = 16       # 0-15 are reserved
 
     # First pass: only look for labels and symbols
@@ -108,23 +116,49 @@ if __name__ == "__main__":
 
     print(symbols)
 
+    f = open("Add.hack", "w")
     # Second pass, translate and output commands
     for (l, address) in parser.lines():
         t = parser.getCommandType(l)
+        instruction = ""
 
         if t is 0:      # C-command
-            # @TODO: Generate binary output
-            pass
+            d = parser.getDest(l)
+            c = parser.getComp(l)
+            j = parser.getJump(l)
+
+            dc = destCode(d)
+            cc = compCode(c)
+            jc = jumpCode(j)
+            
+            instruction = "111" + cc + dc + jc
         elif t is 1:    # A-command
             # @TODO: Look up (and add) symbols, generate binary output
-            pass
+            s = parser.getSymbol(l)
+            v = ""
+            try:    
+                int(s)
+                v = s   # It was a literal, use it
+            except ValueError:  # It is a symbol
+                try:
+                    v = symbols[s]  # Value was found in symbol table
+                except KeyError:    # It is not in the table
+                    symbols[s] = free_address
+                    v = free_address
+                    free_address += 1   # Increment for next add
+            
+            vb = dec_to_binary(v)
+            instruction = vb.zfill(16)  # Fill with leading zeros
         elif t is 2:    # Label
             # Skip, since we already added labels and they will be translated
             # as A-commands
             pass
 
         # @TODO: Write to file
+        print("Writing " + instruction)
+        f.write(instruction)    # @TODO: Also write newline?
+        instruction = ""
 
-
+    f.close()
 
             
