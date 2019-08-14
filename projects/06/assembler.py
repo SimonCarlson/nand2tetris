@@ -1,3 +1,5 @@
+# Author: Simon Carlson
+
 import argparse
 import os
 
