@@ -52,8 +52,12 @@ class Parser():
             return ""
 
     def getComp(self, line):
-        a = line.split("=")[1]
-        b = a.split(";")[0]
+        #a = line.split("=")[1]
+        a = line.split("=")
+        if len(a) is 1:
+            b = a[0].split(";")[0]
+        else:
+            b = a[1].split(";")[0]
         return b.strip()
 
     def getJump(self, line):
@@ -182,7 +186,7 @@ if __name__ == "__main__":
         elif t is 2:    # Label
             # Skip, since we already added labels and they will be translated
             # as A-commands
-            pass
+            continue
 
         print("Writing " + instruction)
         f.write(instruction + "\n")
