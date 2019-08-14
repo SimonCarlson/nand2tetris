@@ -1,3 +1,6 @@
+import argparse
+import os
+
 class Parser():
     parsed_lines = []
     address = 0
@@ -41,7 +44,6 @@ class Parser():
         i = line.find("@")
         return line[i + 1:] # Return @symbol
 
-    # @TODO: What happens when dest is null? How does that look?
     def getDest(self, line):    # M=D+1; JGT
         a = line.split("=")  # split("=") -> [M, D+1; JGT]
         if len(a) > 1:
@@ -86,7 +88,7 @@ def jumpCode(jump):
     table = {"":"000", "JGT":"001", "JEQ":"010", "JGE":"011", "JLT":"100", "JNE":"101", "JLE":"110", "JMP":"111"}
     return table[jump]  # @FIXME KeyError? Also, null?
 
-def init_symbol_table():    # @TODO: Initialize table with predefined symbols
+def init_symbol_table():
     symbols = {}
     symbols["R0"] = 0
     symbols["R1"] = 1
@@ -119,8 +121,16 @@ def dec_to_binary(i):
     return bin(i)[2:]   # Cut off 0b
 
 if __name__ == "__main__":
-    file = "add/Add.asm"    # @FIXME: Accept path as argument
-    parser = Parser(file)
+    args = argparse.ArgumentParser()
+    args.add_argument("path", metavar="path", type=str, help="Path to Hack assembly code")
+    args = args.parse_args()
+    path = args.path
+    abspath = os.path.abspath(path)
+    dirname = os.path.dirname(abspath)
+    os.chdir(dirname)
+    print(os.getcwd())
+
+    parser = Parser(abspath)
     symbols = init_symbol_table()
     free_address = 16       # 0-15 are reserved
 
@@ -136,10 +146,8 @@ if __name__ == "__main__":
             except KeyError: # Add the address for the instruction following the label
                 symbols[s] = address - 1 - len(symbols) # Dont count labels for addresses
 
-
-    print(symbols)
-
-    f = open("Add.hack", "w")
+    outname = os.path.basename(abspath).split(".")[0]
+    f = open(outname + ".hack", "w")
     # Second pass, translate and output commands
     for (l, address) in parser.lines():
         t = parser.getCommandType(l)
@@ -156,7 +164,6 @@ if __name__ == "__main__":
             
             instruction = "111" + cc + dc + jc
         elif t is 1:    # A-command
-            # @TODO: Look up (and add) symbols, generate binary output
             s = parser.getSymbol(l)
             v = ""
             try:    
@@ -177,9 +184,8 @@ if __name__ == "__main__":
             # as A-commands
             pass
 
-        # @TODO: Write to file
         print("Writing " + instruction)
-        f.write(instruction + "\n")    # @TODO: Also write newline?
+        f.write(instruction + "\n")
         instruction = ""
 
     f.close()
