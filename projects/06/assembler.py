@@ -1,5 +1,6 @@
 class Parser():
     parsed_lines = []
+    address = 0
 
     def __init__(self, file):
         with open(file) as f:
@@ -9,18 +10,18 @@ class Parser():
                     self.parsed_lines.append(l)
 
     def parse(self, line):
-        try:
-            index = line.index("//")
+        index = line.find("//")
+        if index > -1:
             line = line[:index]
-        except ValueError:
-            print("No comment")
-    
+        
         line = line.strip()
         return line
 
     def lines(self):
         for i in self.parsed_lines:
-            yield i
+            self.address += 1
+            yield (i, self.address)
+
 
     def getCommandType(self, line):
         i = line.find("(")
@@ -40,6 +41,7 @@ class Parser():
         i = line.find("@")
         return line[i + 1:] # Return @symbol
 
+    # @TODO: What happens when dest is null? How does that look?
     def getDest(self, line):    # M=D+1; JGT
         a = line.split("=")[0]  # split("=") -> [M, D+1; JGT]
         return a.strip()
@@ -57,13 +59,53 @@ class Parser():
             a = ""
         return a.strip()
 
+def destCode(dest):
+    table = {"":"000", "M":"001", "D":"010", "MD":"011", "A":"100", "AM":"101", "AD":"110", "AMD":"111"}
+    return table[dest]  # @FIXME: KeyError? Also, null?
+
+def compCode(comp):
+    a = "0"
+    notaTable = {"0":"101010", "1":"111111", "-1":"111010", "D":"001100", "A":"110000", "!D":"001101", "!A":"110001", 
+    "-D":"001111", "-A":"110011", "D+1":"011111", "A+1":"110111", "D-1":"001110", "A-1":"110010", "D+A":"000010",
+    "D-A":"010011", "A-D":"000111", "D&A":"000000", "D|A":"010101"}
+    aTable = {"M":"110000", "!M":"110001", "-M":"110011", "M+1":"1100111", "M-1":"110010", "D+M":"000010", "D-M":"000010",
+    "M-D":"000111", "D&M":"000000", "D|M":"010101"}
+
+    try:
+        c = notaTable[comp]
+        return a + c
+    except KeyError:
+        c = aTable[comp]
+        a = "1"
+        return a + c
+
+def jumpCode(jump):
+    table = {"":"000", "JGT":"001", "JEQ":"010", "JGE":"011", "JLT":"100", "JNE":"101", "JLE":"110", "JMP":"111"}
+    return table[jump]  # @FIXME KeyError? Also, null?
+
 
 if __name__ == "__main__":
-    file = "add/Add.asm"    # @FIXME: Accept path as argument
+    file = "max/Max.asm"    # @FIXME: Accept path as argument
     parser = Parser(file)
-    for l in parser.lines():
-        c = parser.getCommandType(l)
-        if c is 0:
-            print(parser.getDest(l), parser.getComp(l), parser.getJump(l))
-            
+    symbols = {}
+    free_address = 16       # 0-15 are reserved
+
+    # First pass: only look for labels and symbols
+    for (l, address) in parser.lines():
+        t = parser.getCommandType(l)
+        
+        if t is 2:    # L-command (label)
+            s = parser.getSymbol(l)
+            try:
+                v = symbols[s]
+                continue
+            except KeyError:
+                symbols[s] = address + 1   # Add the address for the instruction following the label'
+                # @FIXME: How to count addresses? With or without labels in code?
+
+    print(symbols)
+
+    # Second pass, translate and output commands
+    #for (l, address) in parser.lines():
+
             
