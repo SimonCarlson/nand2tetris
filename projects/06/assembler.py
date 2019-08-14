@@ -43,8 +43,11 @@ class Parser():
 
     # @TODO: What happens when dest is null? How does that look?
     def getDest(self, line):    # M=D+1; JGT
-        a = line.split("=")[0]  # split("=") -> [M, D+1; JGT]
-        return a.strip()
+        a = line.split("=")  # split("=") -> [M, D+1; JGT]
+        if len(a) > 1:
+            return a[0].strip()
+        else:   # If dest is null the string does not contain = thus does not split
+            return ""
 
     def getComp(self, line):
         a = line.split("=")[1]
@@ -99,13 +102,29 @@ if __name__ == "__main__":
             try:
                 v = symbols[s]
                 continue
-            except KeyError:
-                symbols[s] = address + 1   # Add the address for the instruction following the label'
-                # @FIXME: How to count addresses? With or without labels in code?
+            except KeyError: # Add the address for the instruction following the label
+                symbols[s] = address - 1 - len(symbols) # Dont count labels for addresses
+
 
     print(symbols)
 
     # Second pass, translate and output commands
-    #for (l, address) in parser.lines():
+    for (l, address) in parser.lines():
+        t = parser.getCommandType(l)
+
+        if t is 0:      # C-command
+            # @TODO: Generate binary output
+            pass
+        elif t is 1:    # A-command
+            # @TODO: Look up (and add) symbols, generate binary output
+            pass
+        elif t is 2:    # Label
+            # Skip, since we already added labels and they will be translated
+            # as A-commands
+            pass
+
+        # @TODO: Write to file
+
+
 
             
