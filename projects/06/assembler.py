@@ -77,7 +77,7 @@ def compCode(comp):
     notaTable = {"0":"101010", "1":"111111", "-1":"111010", "D":"001100", "A":"110000", "!D":"001101", "!A":"110001", 
     "-D":"001111", "-A":"110011", "D+1":"011111", "A+1":"110111", "D-1":"001110", "A-1":"110010", "D+A":"000010",
     "D-A":"010011", "A-D":"000111", "D&A":"000000", "D|A":"010101"}
-    aTable = {"M":"110000", "!M":"110001", "-M":"110011", "M+1":"1100111", "M-1":"110010", "D+M":"000010", "D-M":"010011",
+    aTable = {"M":"110000", "!M":"110001", "-M":"110011", "M+1":"110111", "M-1":"110010", "D+M":"000010", "D-M":"010011",
     "M-D":"000111", "D&M":"000000", "D|M":"010101"}
 
     try:
@@ -121,7 +121,6 @@ def init_symbol_table():
     return symbols
 
 def dec_to_binary(i):
-    print(str(i)  + " TO BINARY")
     i = int(i) 
     return bin(i)[2:]   # Cut off 0b
 
@@ -133,7 +132,6 @@ if __name__ == "__main__":
     abspath = os.path.abspath(path)
     dirname = os.path.dirname(abspath)
     os.chdir(dirname)
-    print(os.getcwd())
 
     parser = Parser(abspath)
     symbols = init_symbol_table()
@@ -151,7 +149,6 @@ if __name__ == "__main__":
             except KeyError: # Add the address for the instruction following the label
                 symbols[s] = address - 1 - len(symbols) + 23 # Dont count labels for addresses, account for pre-initialized symbols
 
-    print(symbols)
 
     outname = os.path.basename(abspath).split(".")[0]
     f = open(outname + ".hack", "w")
@@ -191,7 +188,6 @@ if __name__ == "__main__":
             # as A-commands
             continue
 
-        print("Writing " + instruction)
         f.write(instruction + "\n")
         instruction = ""
 
