@@ -88,7 +88,30 @@ def jumpCode(jump):
 
 def init_symbol_table():    # @TODO: Initialize table with predefined symbols
     symbols = {}
-
+    symbols["R0"] = 0
+    symbols["R1"] = 1
+    symbols["R2"] = 2
+    symbols["R3"] = 3
+    symbols["R4"] = 4
+    symbols["R5"] = 5
+    symbols["R6"] = 6
+    symbols["R7"] = 7
+    symbols["R8"] = 8
+    symbols["R9"] = 9
+    symbols["R10"] = 10
+    symbols["R11"] = 11
+    symbols["R12"] = 12
+    symbols["R13"] = 13
+    symbols["R14"] = 14
+    symbols["R15"] = 15
+    symbols["SCREEN"] = 16384
+    symbols["KBD"] = 24576
+    symbols["SP"] = 0
+    symbols["LCL"] = 1
+    symbols["ARG"] = 2
+    symbols["THIS"] = 3
+    symbols["THAT"] = 4
+    
     return symbols
 
 def dec_to_binary(i):
